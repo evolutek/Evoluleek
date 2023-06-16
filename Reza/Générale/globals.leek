@@ -1,0 +1,95 @@
+/** Exporté le 16/06/2023 18:47:49 **/
+
+/** Générale/globals **/
+
+function GetMaxRange() {
+	var max = 0
+	var i = 0
+	while (i < count(ARMES))
+	{
+		if (ARMES[i]["portee_max"] > max) {
+			max = ARMES[i]["portee_max"]
+		}
+		i++
+	}
+	debug("Max is " + max)
+	return max
+}
+	
+function GetMinRange() {
+	var min = 99
+	var i = 0
+	while (i < count(ARMES))
+	{
+		if (ARMES[i]["portee_min"] < min) {
+			min = ARMES[i]["portee_min"]
+		}
+		i++
+	}
+	return min
+}
+
+// ARMES
+function nouvelleArme(id, deg_min, deg_max){
+    var obj = [
+		"type":"arme"
+		"id":id
+		"deg_min":deg_min
+		"deg_max":deg_max
+		"portee_min":getWeaponMinRange(id)
+		"portee_max":getWeaponMaxRange(id)
+		"cout":getWeaponCost(id)
+		"dispo":0
+		"dispo_max":0
+	]
+    return obj;
+}
+
+function nouvellePuce(id, deg_min, deg_max){
+    var obj = [
+		"type":"puce"
+		"id":id
+		"deg_min":deg_min
+		"deg_max":deg_max
+		"portee_min":getChipMinRange(id)
+		"portee_max":getChipMaxRange(id)
+		"cout":getChipCost(id)
+		"dispo":getChipCooldown(id)
+		"dispo_max":getChipCooldown(id)
+	]
+    return obj;
+}
+
+
+
+global ARMES = []
+
+if(isEmpty(ARMES)) {
+	var X = nouvellePuce(CHIP_ROCK, 35, 36)
+	insert(ARMES, X, 0)
+
+	X = nouvelleArme(WEAPON_MACHINE_GUN, 30, 45)
+	insert(ARMES, X, 1)
+
+	X = nouvellePuce(CHIP_ICE, 17, 19)
+	insert(ARMES, X, 2)
+
+	X = nouvelleArme(WEAPON_PISTOL, 15, 20)
+	insert(ARMES, X, 3)
+
+	X = nouvellePuce(CHIP_SHOCK, 7, 9)
+	insert(ARMES, X, 4)
+
+	X = nouvellePuce(CHIP_PEBBLE, 2, 34)
+	insert(ARMES, X, 5)
+}
+
+// Autre
+global MyHeal = CHIP_BANDAGE
+global MyProt = CHIP_PROTEIN
+global MyProt2 = CHIP_HELMET
+global enemy = getNearestEnemy()
+global self = getEntity()
+global MaxRange = GetMaxRange()
+debug("PORTEE_MAX = " + MaxRange)
+global MAX_DEGATS = 10

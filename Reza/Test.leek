@@ -1,0 +1,97 @@
+/** Exporté le 16/06/2023 18:47:27 **/
+
+/** Test **/
+
+/* Etape 1: Définir les variables */
+global MyMainWeapon = WEAPON_PISTOL
+global MySecondaryWeapon = WEAPON_MACHINE_GUN
+global MyMainChip = CHIP_ICE
+global MySecondaryChip = CHIP_PEBBLE
+global MyHeal = CHIP_BANDAGE
+global MyProt = CHIP_PROTEIN
+global MyProt2 = CHIP_HELMET
+global SAFE_DIST = 10
+global enemy = getNearestEnemy()
+global self = getEntity()
+global MaxRange = max(max(getWeaponMaxRange(MyMainWeapon), getWeaponMaxRange(MySecondaryWeapon)), max(getChipMaxRange(MyMainChip), getChipMaxRange(MySecondaryChip)))
+
+function ATTACK() {
+	// Machinegun
+	while (getTP(self) > getWeaponCost(MySecondaryWeapon) and canUseWeapon(MySecondaryWeapon, enemy)) {
+		setWeapon(MySecondaryWeapon) // Attention : coûte 1 PT
+		debug("FEU SECONDAIRE ! TPs: " + getTP(self))
+		useWeapon(enemy)
+	}
+	// Gun
+	while (getTP(self) > getWeaponCost(MyMainWeapon) and canUseWeapon(MyMainWeapon, enemy)) {
+		setWeapon(MyMainWeapon) // Attention : coûte 1 PT
+		debug("FEU ! TPs: " + getTP(self))
+		useWeapon(enemy)
+	}
+	// Ice
+	while (getTP(self) > getChipCost(MyMainChip) and canUseChip(MyMainChip, enemy)) {
+		debug("CAILLOU ! TPs: " + getTP(self))
+		useChip(MyMainChip, enemy)
+	}
+	// 3) Vider ses TP
+	// Soins
+	if (getTP(self) > getChipCost(MyHeal) and
+		getLife() < getTotalLife() - 18 and
+		canUseChip(MyHeal, self)) {
+		debug("Soins ! TPs: " + getTP(self))
+		useChip(MyHeal, self)
+	}
+	// Shock
+	if (getTP(self) > getChipCost(MySecondaryChip) and canUseChip(MySecondaryChip, enemy)) {
+		moveToward(enemy)
+		debug("CAILLOU ! TPs: " + getTP(self))
+		useChip(MySecondaryChip, enemy)
+	}
+}
+
+/* Etape 2: Premier tour */
+if (getTurn() == 1) {
+	setWeapon(MyMainWeapon) // Attention : coûte 1 PT
+	debug("Je suis qui ?" + self)
+	debug("Qui est mon ennemi ?" + enemy)
+	debug("J'ai des TP ?" + getTP(self))
+	debug("J'ai des MP ?" + getMP(self))
+	debug("Je peux tirer ?" + canUseWeapon(MyMainWeapon, enemy))
+	say("YOOOOOOOOOOO !!!")
+}
+
+/* Etape 3: Pré action */
+// 1) Protéines si possible
+if (getTP(self) > getChipCost(MyProt) + getChipCost(MyProt2)) {
+	debug("Protéines ! TPs: " + getTP(self))
+	useChip(MyProt, self)
+	useChip(MyProt2, self)
+}
+// 2) Soin au besoin
+if (getTP(self) > getChipCost(MyHeal) and
+	getLife() < getTotalLife() - 18 and
+	canUseChip(MyHeal, self)) {
+	debug("Soins ! TPs: " + getTP(self))
+	useChip(MyHeal, self)
+}
+/* Etape 4: Action */
+// 1) Avancer vers l'ennemi
+while (getCellDistance(getCell(enemy), getCell(self)) > 1 and
+	   getLife() > getTotalLife() * 0.2 and
+	   ((getMP(self) > 0 and getCellDistance(getCell(enemy), getCell(self)) > SAFE_DIST)
+		or 
+	   (getMP(self) > 3 and (getCellDistance(getCell(enemy), getCell(self)) > MaxRange or !lineOfSight(self, enemy))))) {
+	debug("On avance")
+	moveToward(enemy, 1)
+}
+// 2) ATTAQUER
+ATTACK()
+
+// 4) Reculer !!!
+while (getMP(self) > 0 and getCellDistance(getCell(enemy), getCell(self)) < MaxRange) {
+	debug("On recule")
+	moveAwayFrom(enemy)
+}
+
+// 5) ATTAQUER
+ATTACK()

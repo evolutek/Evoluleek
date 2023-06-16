@@ -1,0 +1,48 @@
+/* V1.0 par reza0310 */
+
+global HEAL = CHIP_CURE
+global SHIELD = CHIP_SHIELD
+global BONUS_CHIPS = [HEAL, SHIELD]
+global VENOM = CHIP_VENOM
+global SHOCK = CHIP_SHOCK
+global MALUS_CHIPS = [VENOM, SHOCK]
+
+global SELF = getEntity()
+global ALLIES = getAliveAllies()
+global ENEMIES = getAliveEnemies()
+
+var i = 0
+while (i < count(ALLIES))
+{
+	if (getLife(ALLIES[i]) / getTotalLife(ALLIES[i]) < 0.4) {
+		var j = 0
+		while (j < count(BONUS_CHIPS))
+		{
+			if (canUseChip(BONUS_CHIPS[j], ALLIES[i]) and  // Parce que canUseChip ne checke pas tout
+				getTP(SELF) >= getChipCost(BONUS_CHIPS[j]) and
+				getCooldown(BONUS_CHIPS[j]) == 0)
+				{
+					useChip(BONUS_CHIPS[j], ALLIES[i])
+				}
+			j++
+		}
+	}
+	i++
+}
+
+var i = 0
+while (i < count(ENEMIES))
+{
+	var j = 0
+	while (j < count(MALUS_CHIPS))
+	{
+		if (canUseChip(MALUS_CHIPS[j], ENEMIES[i]) and  // Parce que canUseChip ne checke pas tout
+			getTP(SELF) >= getChipCost(MALUS_CHIPS[j]) and
+			getCooldown(MALUS_CHIPS[j]) == 0)
+			{
+				useChip(MALUS_CHIPS[j], ENEMIES[i])
+			}
+		j++
+	}
+	i++
+}

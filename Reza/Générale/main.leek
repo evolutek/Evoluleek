@@ -1,0 +1,49 @@
+/** Exporté le 16/06/2023 18:47:40 **/
+
+/** Générale/main **/
+
+include("globals")
+include("functions")
+include("execute")
+include("hunter")
+include("prey")
+
+/* Etape 1: Premier tour */
+if (getTurn() == 1) {
+	// Pas encore set: setWeapon(ARMES[0]["id"]) // Attention : coûte 1 PT
+	debug("Je suis qui ? " + self)
+	debug("Qui est mon ennemi ? " + enemy)
+	debug("J'ai des TP ? " + getTP(self))
+	debug("J'ai des MP ? " + getMP(self))
+	say("YOOOOOOOOOOO " + getName(enemy) + "!!!")
+}
+
+/* Etape 2: Choisir l'état */
+// 1) Soin au besoin
+if (getTP(self) > getChipCost(MyHeal) and
+	getLife() < getTotalLife() - 18 and
+	canUseChip(MyHeal, self)) {
+	debug("Soins ! TPs: " + getTP(self))
+	useChip(MyHeal, self)
+}
+// 2) Recharger les chip
+var i = 0
+while (i < count(ARMES))
+{
+	if (ARMES[i]["type"] == "puce" and
+	   ARMES[i]["dispo"] < ARMES[i]["dispo_max"]) {
+		ARMES[i]["dispo"]++
+	}
+	i++
+}
+
+// 3) Choix
+if (getLife(enemy) < MAX_DEGATS) {
+	hunter()  // A termes calculer MAX_DEGATS et mettre ici la fonction d'exécution de l'ennemi
+} else {
+	if (getLife() / getTotalLife() > (getLife(enemy) / getTotalLife(enemy)) - 0.2) {
+		hunter()
+	} else {
+		prey()
+	}
+}

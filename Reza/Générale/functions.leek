@@ -1,0 +1,41 @@
+/** Exporté le 16/06/2023 18:47:56 **/
+
+/** Générale/functions **/
+
+include("globals")
+
+function ATTACK()
+{
+	debug("FEU !")
+	if (lineOfSight(getCell(self), getCell(enemy)))
+	{
+		var i = 0
+		while (i < count(ARMES))
+		{
+			while (getCellDistance(getCell(enemy), getCell(self)) >= ARMES[i]["portee_min"] and
+			   getCellDistance(getCell(enemy), getCell(self)) <= ARMES[i]["portee_max"] and
+			   getTP(self) >= ARMES[i]["cout"] and
+			   ARMES[i]["dispo"] == ARMES[i]["dispo_max"])
+			{
+				ARMES[i]["dispo"] = 0
+				if (ARMES[i]["type"] == "arme") {
+					if (canUseWeapon(ARMES[i]["id"], enemy)) {
+						setWeapon(ARMES[i]["id"])
+						while (canUseWeapon(enemy)) {
+							debug("FEU ARME " + i)
+							useWeapon(enemy)
+						}
+					}
+				} else {
+					if (canUseChip(ARMES[i]["id"], enemy)) {
+						debug("FEU PUCE " + i)
+						useChip(ARMES[i]["id"], enemy)
+					}
+				}
+			}
+			i++
+		}
+	} else {
+	 	say("J'VOIS RIEN !")
+	}
+}

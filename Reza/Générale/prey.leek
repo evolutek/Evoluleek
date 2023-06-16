@@ -1,0 +1,24 @@
+/** Exporté le 16/06/2023 18:47:43 **/
+
+/** Générale/prey **/
+
+include("globals")
+include("functions")
+
+function prey() {
+	// 1) Protection si possible
+	if (canUseChip(MyProt2, self))
+	{
+		debug("Protection ! TPs: " + getTP(self))
+		useChip(MyProt2, self)
+	}
+	
+	// 2) On tire
+	ATTACK()
+	
+	// 3) On SE tire
+	moveAwayFrom(enemy)
+	
+	// 4) Et on check juste ça au cas où
+	ATTACK()
+}
