@@ -1,0 +1,143 @@
+/** Exporté le 6/16/2023, 7:47:59 PM **/
+
+/** Base **/
+
+// We take the pistol
+function use_weapon(id) {
+	if (getWeapon() != id) {
+		setWeapon(id); // Warning: costs 1 TP
+	}
+}
+
+function get_nearest_cell(origin, cells) {
+	var best_d = 10000000;
+	var best_cell = null;
+	for (var cell in cells) {
+		var d = getCellDistance(origin, cell);
+		if (d < best_d) {
+			best_d = d;
+			best_cell = cell;
+		}
+	}
+	return best_cell;
+}
+
+function get_nearest_enemy_leek() {
+	var enemies = getEnemies();
+	var nearest = null;
+	var best_dist = 1000000;
+	for (var entity in enemies) {
+		if (getType(entity) == ENTITY_LEEK) {
+			var dist = getCellDistance(getCell(), getCell(entity));
+			if (dist < best_dist) {
+				best_dist = dist;
+				nearest = entity;
+			}
+		}
+	}
+	return nearest;
+}
+
+function is_safe(enemy) {
+	return getCellDistance(getCell(), getCell(enemy)) > 8 || !lineOfSight(getCell(), getCell(enemy));
+}
+
+function use_chip(id, enemy) {
+	var r = useChip(id, enemy);
+	return r == USE_SUCCESS || r == USE_CRITICAL;
+}
+
+function has_effect(type) {
+	var effects = getEffects();
+	for (var effect in effects) {
+		if (effect[0] == type) return true;
+	}
+	return false;
+}
+
+// We get the nearest enemy
+var enemy = get_nearest_enemy_leek();
+
+// Heal if needed
+if (is_safe(enemy) && getLife() < getTotalLife() / 2)
+{
+	while (getTP() > 0) {
+		var r = useChip(CHIP_BANDAGE);
+		if (r != USE_SUCCESS && r != USE_CRITICAL) {
+			//debugE("Failled to use weapon: " + r);
+			break;
+		}
+	}
+}
+else
+{
+	// We move towards him
+	/*var dist = getCellDistance(getCell(), getCell(enemy)) - getWeaponMaxRange(WEAPON_PISTOL) + SHOOT_GAP;
+	if (dist < 0) {
+		//if (canUseWeapon(enemy)) {
+		//	moveAwayFrom(enemy, -dist);
+		//}
+	} else if (dist > 0) {
+		moveToward(enemy, dist);
+	}
+	
+	if (!canUseWeapon(enemy)) {
+		moveToward(enemy);
+	}*/
+	
+	var target = get_nearest_cell(getCell(), getCellsToUseWeapon(WEAPON_MACHINE_GUN, enemy));
+	moveTowardCell(target);
+	
+	if (!has_effect(EFFECT_BUFF_TP)) {
+		useChip(CHIP_MOTIVATION);
+	}
+	
+	if (is_safe(enemy) && !has_effect(EFFECT_BUFF_RESISTANCE)) {
+		useChip(CHIP_HELMET);
+	}
+
+	// We try to shoot him!
+	var attack = true;
+	if (canUseWeapon(WEAPON_MACHINE_GUN, enemy))
+		use_weapon(WEAPON_MACHINE_GUN);
+	else if(canUseWeapon(WEAPON_PISTOL, enemy))
+		use_weapon(WEAPON_PISTOL);
+	else
+		attack = false;
+
+	if (!(attack && getWeapon() == WEAPON_MACHINE_GUN)) {
+		if (!has_effect(EFFECT_BUFF_STRENGTH)) {
+			useChip(CHIP_PROTEIN);
+		}
+	}
+	
+	if (attack) {
+		while (true) {
+			var r = useWeapon(enemy);
+			if (r != USE_SUCCESS && r != USE_CRITICAL) break;
+		}
+	}
+	
+	if (!has_effect(EFFECT_BUFF_STRENGTH)) {
+		useChip(CHIP_PROTEIN);
+	}
+	
+	while (use_chip(CHIP_ICE, enemy));
+}
+
+//moveAwayFromCells(getCellsToUseWeapon(weapon));
+if (getCellDistance(getCell(), getCell(enemy)) < 10) {
+	moveAwayFrom(enemy);
+}
+
+var sentences = [
+	"I'm going to kick your ass",
+	"Too easy",
+	"Oups, miss click",
+	"I'm going AFK",
+	"It's a joke",
+	"Please come closer, I'm harmless",
+	"Please come closer, I want a hug",
+	"42"
+];
+say(sentences[floor(rand() * count(sentences))]);
