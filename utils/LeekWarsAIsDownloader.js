@@ -8,10 +8,13 @@ function trigger_download(filename, url) {
 	document.body.removeChild(element);
 }
 
-function http_get(url) {
+function http_request(url, method="GET", headers={}, body=undefined) {
 	return new Promise((resolve, reject) => {
 		var http = new XMLHttpRequest();
-		http.open('GET', url, true);
+		http.open(method, url, true);
+		for (let key in headers) {
+			http.setRequestHeader(key, headers[key]);
+		}
 		http.onreadystatechange = function() {
 			if(http.readyState == 4) {
 				if (http.status == 200) {
@@ -20,12 +23,12 @@ function http_get(url) {
 			}
 		}
 		http.onerror = reject;
-		http.send();
+		http.send(body);
 	});
 }
 
 function retreive_ais(ais, folders) {
-	return new Promise((resolve, reject) => {
+	return new Promise(async (resolve, reject) => {
 		let req_data = {};
 		let files_names = {};
 		let folders_names = {};
@@ -52,28 +55,25 @@ function retreive_ais(ais, folders) {
 			files_names[ai.id] = {name: ai.name, folder: ai.folder};
 		}
 		
-		const http = new XMLHttpRequest();
+		
 		const params = 'ais=' + encodeURIComponent(JSON.stringify(req_data));
-		http.open('POST', 'https://leekwars.com/api/ai/sync', true);
-		http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
-		http.onreadystatechange = function() {
-			if(http.readyState == 4) {
-				if (http.status == 200) {
-					const data = JSON.parse(http.responseText);
-					let files = [];
-					for (let i = 0; i < data.length; i++) {
-						const file = data[i];
-						let file_name = files_names[file.id].name + ".leek";
-						if (files_names[file.id].folder > 0)
-							file_name = folders_paths[files_names[file.id].folder] + "/" + file_name;
-						files.push({name: file_name, content: file.code});
-					}
-					resolve(files);
-				} else reject(new Error("invalid http response code " + http.status));
-			}
+	
+		const text_data = await http_request('https://leekwars.com/api/ai/sync', 'POST', {
+			'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+		}, params);
+		
+		const data = JSON.parse(text_data);
+		
+		let files = [];
+		for (let i = 0; i < data.length; i++) {
+			const file = data[i];
+			let file_name = files_names[file.id].name + ".leek";
+			if (files_names[file.id].folder > 0)
+				file_name = folders_paths[files_names[file.id].folder] + "/" + file_name;
+			files.push({name: file_name, content: file.code});
 		}
-		http.onerror = reject;
-		http.send(params);
+		
+		resolve(files);
 	});
 }
 
@@ -88,8 +88,8 @@ async function create_zip(files) {
 }
 
 async function dyn_import(url) {
-	var s = document.createElement("script");
-	s.textContent = await http_get(url);
+	let s = document.createElement("script");
+	s.textContent = await http_request(url);
 	document.head.appendChild(s);
 }
 
@@ -98,11 +98,11 @@ async function download_ais() {
 	await dyn_import("https://raw.githubusercontent.com/gildas-lormeau/zip.js/master/dist/zip.min.js");
 	
 	// Retreive list of AIs
-	var farmer_script = document.head.getElementsByTagName("script")[2];
-	var cloned_script = farmer_script.cloneNode();
+	const farmer_script = document.head.getElementsByTagName("script")[2];
+	let cloned_script = farmer_script.cloneNode();
 	cloned_script.textContent = farmer_script.textContent;
 	document.head.appendChild(cloned_script);
-	var farmer = __FARMER__;
+	const farmer = __FARMER__;
 	cloned_script.remove();
 	
 	// Retreive AIs code
