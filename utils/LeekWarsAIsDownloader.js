@@ -27,54 +27,52 @@ function http_request(url, method="GET", headers={}, body=undefined) {
 	});
 }
 
-function retreive_ais(ais, folders) {
-	return new Promise(async (resolve, reject) => {
-		let req_data = {};
-		let files_names = {};
-		let folders_names = {};
-		let folders_paths = {};
-		
-		for (let i = 0; i < folders.length; i++) {
-			const folder = folders[i];
-			folders_names[folder.id] = {name: folder.name, parent: folder.folder};
-		}
-		
-		for (const key in folders_names) {
-			let path = folders_names[key].name;
-			let current = folders_names[key].parent;
-			while (current > 0) {
-				path = folders_names[current].name + "/" + path;
-				current = folders_names[current].parent;
-			}
-			folders_paths[key] = path;
-		}
-		
-		for (let i = 0; i < ais.length; i++) {
-			const ai = ais[i];
-			req_data[ai.id] = 0;
-			files_names[ai.id] = {name: ai.name, folder: ai.folder};
-		}
-		
-		
-		const params = 'ais=' + encodeURIComponent(JSON.stringify(req_data));
+async function retreive_ais(ais, folders) {
+	let req_data = {};
+	let files_names = {};
+	let folders_names = {};
+	let folders_paths = {};
 	
-		const text_data = await http_request('https://leekwars.com/api/ai/sync', 'POST', {
-			'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
-		}, params);
-		
-		const data = JSON.parse(text_data);
-		
-		let files = [];
-		for (let i = 0; i < data.length; i++) {
-			const file = data[i];
-			let file_name = files_names[file.id].name + ".leek";
-			if (files_names[file.id].folder > 0)
-				file_name = folders_paths[files_names[file.id].folder] + "/" + file_name;
-			files.push({name: file_name, content: file.code});
+	for (let i = 0; i < folders.length; i++) {
+		const folder = folders[i];
+		folders_names[folder.id] = {name: folder.name, parent: folder.folder};
+	}
+	
+	for (const key in folders_names) {
+		let path = folders_names[key].name;
+		let current = folders_names[key].parent;
+		while (current > 0) {
+			path = folders_names[current].name + "/" + path;
+			current = folders_names[current].parent;
 		}
-		
-		resolve(files);
-	});
+		folders_paths[key] = path;
+	}
+	
+	for (let i = 0; i < ais.length; i++) {
+		const ai = ais[i];
+		req_data[ai.id] = 0;
+		files_names[ai.id] = {name: ai.name, folder: ai.folder};
+	}
+	
+	
+	const params = 'ais=' + encodeURIComponent(JSON.stringify(req_data));
+
+	const text_data = await http_request('https://leekwars.com/api/ai/sync', 'POST', {
+		'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+	}, params);
+	
+	const data = JSON.parse(text_data);
+	
+	let files = [];
+	for (let i = 0; i < data.length; i++) {
+		const file = data[i];
+		let file_name = files_names[file.id].name + ".leek";
+		if (files_names[file.id].folder > 0)
+			file_name = folders_paths[files_names[file.id].folder] + "/" + file_name;
+		files.push({name: file_name, content: file.code});
+	}
+	
+	return files;
 }
 
 async function create_zip(files) {
@@ -99,11 +97,8 @@ async function download_ais() {
 	
 	// Retreive list of AIs
 	const farmer_script = document.head.getElementsByTagName("script")[2];
-	let cloned_script = farmer_script.cloneNode();
-	cloned_script.textContent = farmer_script.textContent;
-	document.head.appendChild(cloned_script);
-	const farmer = __FARMER__;
-	cloned_script.remove();
+	const farmer_text = farmer_script.textContent;
+	const farmer = JSON.parse(farmer_text.substring(farmer_text.indexOf('{'), farmer_text.lastIndexOf('}') + 1));
 	
 	// Retreive AIs code
 	const files = await retreive_ais(farmer.farmer.ais, farmer.farmer.folders);
