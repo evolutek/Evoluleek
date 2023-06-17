@@ -1,0 +1,18 @@
+include("Module");
+
+global sentences = [
+	"I'm going to kick your ass",
+	"Too easy",
+	"Oups, miss click",
+	"I'm going AFK",
+	"It's a joke",
+	"Please come closer, I'm harmless",
+	"Please come closer, I want a hug",
+	"42"
+];
+
+class Talker extends Module {
+	public on_turn() {
+		say(sentences[floor(rand() * count(sentences))]);
+	}
+}

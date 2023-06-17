@@ -1,0 +1,15 @@
+include("Log");
+
+//dbg("Debug test");
+//info("Info test");
+//success("Success test");
+//warning("Warning test");
+//error("Error test");
+//fatal("Fatal test");
+
+function _f() {}
+global f = _f;
+f();
+
+var ops = getOperations();
+info(ops + "/" + OPERATIONS_LIMIT + " (" + round(ops * 100 / OPERATIONS_LIMIT) + " %) operations consumed");

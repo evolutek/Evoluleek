@@ -1,0 +1,8 @@
+function gvar_val() {
+	debug("gvar_val()");
+	return getTurn();
+}
+
+global gvar = gvar_val();
+
+debug("gvar = " + gvar);

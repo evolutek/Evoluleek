@@ -1,0 +1,4 @@
+class Module {
+	public on_turn() {}	
+	public on_init() {}
+}

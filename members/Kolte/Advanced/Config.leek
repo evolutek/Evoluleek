@@ -1,0 +1,3 @@
+global LOG_LEVEL = 0; // 0: Debug, 1: Info, 2: Warning, 3: Error, 4: Fatal
+global SAFE_MOD = true;
+global PLAY_FIRST_TURN = false;

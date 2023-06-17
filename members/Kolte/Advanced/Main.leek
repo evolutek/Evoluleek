@@ -1,0 +1,31 @@
+include("Config");
+include("Log");
+include("ChessMind");
+include("ModulesManager");
+
+// Modules
+include("Modules/Talker");
+
+global modules = ModulesManager();
+
+function init() {
+	modules.register(Talker());
+	modules.init();
+}
+
+function turn() {
+	modules.turn();
+}
+
+global first_turn = true;
+
+if (first_turn) {
+	init();
+	if (PLAY_FIRST_TURN) turn();
+	first_turn = false;
+} else {
+	turn();
+}
+
+var ops = getOperations();
+info(ops + "/" + OPERATIONS_LIMIT + " (" + round(ops * 100 / OPERATIONS_LIMIT) + " %) operations consumed");

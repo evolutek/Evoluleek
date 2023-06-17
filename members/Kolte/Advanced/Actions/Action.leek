@@ -1,0 +1,6 @@
+include("../Error");
+
+class Action {
+	public perform() { not_implemented("Action::perform"); }
+	public cancel() { not_implemented("Action::cancel"); }
+}

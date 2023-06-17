@@ -1,0 +1,43 @@
+include("Modules/Module");
+include("Error");
+include("Config");
+
+class ModulesManager {
+	private modules = [];
+	private initialized = false;
+	public register;
+	
+	private _register_safe(module) {
+		if (module instanceof Module) {
+			if (this.initialized) {
+				error("can't register module after manager's initialization");
+			} else {
+				this._register(module);
+			}
+		} else {
+			invalid_arg("ModuleManager::register()", "module", "not an instance of class Module");
+		}
+	}
+	
+	private _register(module) {
+		push(this.modules, module);
+	}
+	
+	public init() {
+		this.initialized = true;
+		for (var module in this.modules) {
+			module.on_init();
+		}
+	}
+	
+	public turn() {
+		for (var module in this.modules) {
+			module.on_turn();
+		}
+	}
+	
+	public constructor() {
+		this.register = SAFE_MOD ? function(a) {this._register_safe(a)} : function(a){this._register(a)};
+		//this.register = SAFE_MOD ? this._register_safe : this._register;
+	}
+}

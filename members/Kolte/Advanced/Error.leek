@@ -1,0 +1,13 @@
+include("Log");
+
+function not_implemented(func) {
+	fatal(func + "not implemented");
+}
+
+function todo(func) {
+	warning(func + ": todo");
+}
+
+function invalid_arg(func, arg, msg) {
+	error(func + " called with a bad value for argument '" + arg + "': " + msg);
+}

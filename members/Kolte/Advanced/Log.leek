@@ -1,0 +1,38 @@
+include("Utils");
+include("Config");
+
+global FATAL_COLOR = getColor(180, 0, 0);
+global SUCCESS_COLOR = getColor(0, 185, 0);
+global DEBUG_COLOR = getColor(128, 128, 128);
+
+function _fatal(obj) {
+	debugC("Fatal: " + obj, FATAL_COLOR);
+	pause();
+}
+
+function _error(obj) {
+	debugE("Error: " + obj);
+}
+
+function _success(obj) {
+	debugC("Success: " + obj, SUCCESS_COLOR);
+}
+
+function _info(obj) {
+	debug("Info: " + obj);
+}
+
+function _warning(obj) {
+	debugW("Warning: " + obj);
+}
+
+function _dbg(obj) {
+	debugC("Debug: " + obj, DEBUG_COLOR);
+}
+
+global fatal = _fatal;
+global error = (LOG_LEVEL < 4) ? _error : nop;
+global warning = (LOG_LEVEL < 3) ? _warning : nop;
+global success = (LOG_LEVEL < 2) ? _success : nop;
+global info = (LOG_LEVEL < 2) ? _info : nop;
+global dbg = (LOG_LEVEL < 1) ? _dbg : nop;

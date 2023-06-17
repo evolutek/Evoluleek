@@ -1,8 +1,3 @@
-/** Exporté le 6/16/2023, 7:47:59 PM **/
-
-/** Base **/
-
-// We take the pistol
 function use_weapon(id) {
 	if (getWeapon() != id) {
 		setWeapon(id); // Warning: costs 1 TP

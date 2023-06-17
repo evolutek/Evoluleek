@@ -1,0 +1,7 @@
+class ChessMind {
+	public constructor() {
+	}
+	
+	public play() {
+	}
+}
