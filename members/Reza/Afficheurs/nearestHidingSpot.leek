@@ -1,0 +1,36 @@
+var ennemi = getNearestEnemy()
+
+var cases = []
+fill(cases, true, 613) 
+
+// Getting hiding spots
+for (var i = 0; i < 613; i++) {
+    if (getCellDistance(getCell(ennemi), i) < getMP(ennemi)) {
+		for (var j = 0; j < 613; j++) {
+			if (not isEmptyCell(j) or (lineOfSight(i, j) and cases[j])) {
+				cases[j] = false
+			}
+		}
+	}
+}
+
+// Getting the nearest one
+var nearestID = 0
+var nearestDist = 999
+for (var i = 0; i < 613; i++) {
+    if (cases[i] and getCellDistance(getCell(), i) < nearestDist) {
+		nearestID = i
+		nearestDist = getCellDistance(getCell(), i)
+	}
+}
+
+for (var i = 0; i < 613; i++) {
+    if (cases[i]) {
+		mark(i, getColor(0, 255, 0))
+	} else  {
+		mark(i, getColor(255, 0, 0))
+	}
+}
+mark(nearestID, getColor(0, 0, 255))
+
+moveTowardCell(nearestID)

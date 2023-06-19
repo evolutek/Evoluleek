@@ -1,23 +1,22 @@
-/** Exporté le 16/06/2023 18:47:43 **/
-
-/** Générale/prey **/
-
 include("globals")
 include("functions")
 
 function prey() {
 	// 1) Protection si possible
-	if (canUseChip(MyProt2, self))
-	{
-		debug("Protection ! TPs: " + getTP(self))
-		useChip(MyProt2, self)
+	if (getTP(self) > getChipCost(CHIP_HELMET) and getCooldown(CHIP_HELMET) == 0) {
+		debug("Casque ! TPs: " + getTP(self))
+		useChip(CHIP_HELMET, self)
+	}
+	if (getTP(self) > getChipCost(CHIP_WALL) and getCooldown(CHIP_WALL) == 0) {
+		debug("Mur ! TPs: " + getTP(self))
+		useChip(CHIP_WALL, self)
 	}
 	
 	// 2) On tire
 	ATTACK()
 	
 	// 3) On SE tire
-	moveAwayFrom(enemy)
+	moveTowardCell(GO_HIDE())
 	
 	// 4) Et on check juste ça au cas où
 	ATTACK()

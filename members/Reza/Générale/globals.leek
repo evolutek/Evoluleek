@@ -1,6 +1,4 @@
-/** Exporté le 16/06/2023 18:47:49 **/
-
-/** Générale/globals **/
+/* ----- FONCTIONS ----- */
 
 function GetMaxRange() {
 	var max = 0
@@ -16,6 +14,19 @@ function GetMaxRange() {
 	return max
 }
 	
+function GetMinMaxRange() {
+	var min = 99
+	var i = 0
+	while (i < count(ARMES))
+	{
+		if (ARMES[i]["portee_max"] < min) {
+			min = ARMES[i]["portee_max"]
+		}
+		i++
+	}
+	return min
+}
+	
 function GetMinRange() {
 	var min = 99
 	var i = 0
@@ -29,7 +40,8 @@ function GetMinRange() {
 	return min
 }
 
-// ARMES
+/* ----- OBJETS ----- */
+
 function nouvelleArme(id, deg_min, deg_max){
     var obj = [
 		"type":"arme"
@@ -41,11 +53,12 @@ function nouvelleArme(id, deg_min, deg_max){
 		"cout":getWeaponCost(id)
 		"dispo":0
 		"dispo_max":0
+		"efficacite":deg_min / getWeaponCost(id)
 	]
     return obj;
 }
 
-function nouvellePuce(id, deg_min, deg_max){
+function nouvellePuce(id, deg_min, deg_max, cooldown){
     var obj = [
 		"type":"puce"
 		"id":id
@@ -54,42 +67,100 @@ function nouvellePuce(id, deg_min, deg_max){
 		"portee_min":getChipMinRange(id)
 		"portee_max":getChipMaxRange(id)
 		"cout":getChipCost(id)
-		"dispo":getChipCooldown(id)
-		"dispo_max":getChipCooldown(id)
+		"dispo":cooldown
+		"dispo_max":cooldown
+		"efficacite":deg_min / getChipCost(id)
 	]
     return obj;
 }
 
-
+/* ----- ARMES ----- */
 
 global ARMES = []
 
 if(isEmpty(ARMES)) {
-	var X = nouvellePuce(CHIP_ROCK, 35, 36)
+	var X = nouvellePuce(CHIP_ROCK, 35, 36, 1)
 	insert(ARMES, X, 0)
 
 	X = nouvelleArme(WEAPON_MACHINE_GUN, 30, 45)
 	insert(ARMES, X, 1)
 
-	X = nouvellePuce(CHIP_ICE, 17, 19)
+	X = nouvellePuce(CHIP_ICE, 17, 19, 0)
 	insert(ARMES, X, 2)
 
 	X = nouvelleArme(WEAPON_PISTOL, 15, 20)
 	insert(ARMES, X, 3)
 
-	X = nouvellePuce(CHIP_SHOCK, 7, 9)
+	X = nouvellePuce(CHIP_SHOCK, 7, 9, 0)
 	insert(ARMES, X, 4)
 
-	X = nouvellePuce(CHIP_PEBBLE, 2, 34)
+	X = nouvellePuce(CHIP_PEBBLE, 2, 34, 1)
 	insert(ARMES, X, 5)
 }
 
-// Autre
-global MyHeal = CHIP_BANDAGE
+/* ----- INITIALISATION TOUR 1 ----- */
+
+if (getTurn() == 1) {
+	setRegister("Self", getEntity())
+	debug("SELF = " + getEntity())
+	
+	setRegister("MaxRange", GetMaxRange())
+	debug("PORTEE_MAX = " + GetMaxRange())
+	
+	setRegister("MinMaxRange", GetMinMaxRange())
+	debug("PORTEE_MINMAX = " + GetMinMaxRange())
+	
+	// On trie les armes par efficacité
+	for (var i = 0; i < count(ARMES); i++) {
+		var maxID = i
+		var maxEFF = ARMES[i]["efficacite"]
+		for (var j = i; j < count(ARMES); j++) {
+			if (ARMES[j]["efficacite"] > maxEFF) {
+				maxEFF = ARMES[j]["efficacite"]
+				maxID = j
+			}
+		}
+		var swouitch = ARMES[i]
+		ARMES[i] = ARMES[maxID]
+		ARMES[maxID] = swouitch
+	}
+}
+
+/* ----- VARIABLES ----- */
+
+global enemy = GET_ENEMY()
 global MyProt = CHIP_PROTEIN
-global MyProt2 = CHIP_HELMET
-global enemy = getNearestEnemy()
-global self = getEntity()
-global MaxRange = GetMaxRange()
-debug("PORTEE_MAX = " + MaxRange)
-global MAX_DEGATS = 10
+global self
+global MaxRange
+global MinMaxRange
+global cases = []
+self = number(getRegister("Self"))
+MinMaxRange = number(getRegister("MinMaxRange"))
+MaxRange = number(getRegister("MaxRange"))
+global MAX_DEGATS = 25
+global PHRASES = [
+	["Mort au poireau !!!",
+	"A moi la tarte !!!",
+	"Soit mon quatre heure !!!",
+	"Laisse moi abréger tes souffrance !!!",
+	"Une dernière volonté?",
+	"Je sens ta faiblesse !!!",
+	"T'as déjà perdu la plupart de tes feuilles allez viens !!!",
+	"Viens me voir j'en aurais pas pour longtemps !!!"],
+	["Petit petit! Viens ici!",
+	"Allez viens j'vais pas t'manger ;)",
+	"Ro allez quoi viens!",
+	"Viens t'battre!",
+	"Ramène-toi que j'te transforme en tarte aux poireaux!",
+	"Ton heure est venue poto...",
+	"T'as peur?"
+	"Quand je ne suis pas là ton petit coeur danse mais actuellement je SUIS là."],
+	["Je suis trop jeune pour mourir!",
+	"Voudriez-vous empêcher une jeune pousse de venir poireau? :(",
+	"Oskour! Aled!",
+	"Nan mais allez quoi cédez-moi la victoire svp...",
+	"Maman j'ai mal...",
+	"J'ai pas dit mon dernier mot !",
+	"J'ai une dernière volonté: épargne-moi stp :sad_face:...",
+	"Tu m'auras pas euh! Nananère euh!"]
+]

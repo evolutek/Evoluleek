@@ -1,7 +1,3 @@
-/** Exporté le 16/06/2023 18:47:27 **/
-
-/** Test **/
-
 /* Etape 1: Définir les variables */
 global MyMainWeapon = WEAPON_PISTOL
 global MySecondaryWeapon = WEAPON_MACHINE_GUN

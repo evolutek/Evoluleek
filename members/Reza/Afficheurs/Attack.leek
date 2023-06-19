@@ -1,0 +1,22 @@
+var enemy = getNearestEnemy()
+var MinMaxRange = getRegister("MinMaxRange")
+
+var cells = getCellsToUseChip(CHIP_ICE, enemy)
+removeElement(cells, getCell(enemy))
+
+// Getting the nearest one
+var nearestID = cells[0]
+var nearestDist = 999
+for (var i = 0; i < count(cells); i++) {
+	if (getCellDistance(getCell(), cells[i]) < nearestDist and
+	   getCellDistance(getCell(enemy), cells[i]) >= MinMaxRange) {
+		nearestID = cells[i]
+		nearestDist = getCellDistance(getCell(), cells[i])
+	}
+}
+
+for (var i = 0; i < count(cells); i++) {
+	mark(cells[i], getColor(0, 255, 0))
+}
+
+mark(nearestID, getColor(0, 0, 255))

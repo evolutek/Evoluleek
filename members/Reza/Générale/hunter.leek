@@ -1,7 +1,3 @@
-/** Exporté le 16/06/2023 18:47:46 **/
-
-/** Générale/hunter **/
-
 include("globals")
 include("functions")
 
@@ -9,25 +5,28 @@ function hunter() {
 	// 1) Protéines si possible
 	if (canUseChip(MyProt, self))
 	{
-		debug("Protéines ! TPs: " + getTP(self))
 		useChip(MyProt, self)
 	}
 	
 	// 2) On se met en position de tir
-	while (getMP(self) > 0 and 
-		   getCellDistance(getCell(enemy), getCell(self)) > MaxRange and
-		   !lineOfSight(getCell(self), getCell(enemy)))
+	var cell = GO_ATTACK()
+	var check = true
+	while (getMP(self) > 0 and getCellDistance(getCell(), cell) > 0 and check)
 	{
-		debug("On avance de 1")
-		moveToward(enemy, 1)
+		var lastPM = getMP()
+		
+		moveTowardCell(cell, 1)
+		
+		if (getMP() == lastPM) {
+			check = false
+			debug("Peut pas avancer...")
+		}
 	}
 	
 	// 3) On tire
 	ATTACK()
 	
 	// 4) Au besoin, on SE tire
-	while (getMP(self) > 0 and 
-		   getCellDistance(getCell(enemy), getCell(self)) < 5) {
-		moveAwayFrom(enemy, 1)
-	}
+	check = true
+	moveTowardCell(GO_HIDE())
 }

@@ -1,7 +1,3 @@
-/** Exporté le 16/06/2023 18:47:40 **/
-
-/** Générale/main **/
-
 include("globals")
 include("functions")
 include("execute")
@@ -20,13 +16,26 @@ if (getTurn() == 1) {
 
 /* Etape 2: Choisir l'état */
 // 1) Soin au besoin
-if (getTP(self) > getChipCost(MyHeal) and
+if (getTP(self) > getChipCost(CHIP_BANDAGE) and
 	getLife() < getTotalLife() - 18 and
-	canUseChip(MyHeal, self)) {
+	canUseChip(CHIP_BANDAGE, self)) {
 	debug("Soins ! TPs: " + getTP(self))
-	useChip(MyHeal, self)
+	useChip(CHIP_BANDAGE, self)
 }
-// 2) Recharger les chip
+
+// 2) Préparation au combat au besoin
+if (getCellDistance(getCell(), getCell(enemy)) < 15 and getLife()/getTotalLife() > 0.5) {
+	if (getTP(self) > getChipCost(CHIP_MOTIVATION) and getCooldown(CHIP_MOTIVATION) == 0) {
+		debug("Motivation ! TPs: " + getTP(self))
+		useChip(CHIP_MOTIVATION, self)
+	}
+	if (getTP(self) > getChipCost(CHIP_STRETCHING) and getCooldown(CHIP_STRETCHING) == 0) {
+		debug("Étirements ! TPs: " + getTP(self))
+		useChip(CHIP_STRETCHING, self)
+	}
+}
+
+// 3) Recharger les chip
 var i = 0
 while (i < count(ARMES))
 {
@@ -37,13 +46,14 @@ while (i < count(ARMES))
 	i++
 }
 
-// 3) Choix
+// 4) Choix
 if (getLife(enemy) < MAX_DEGATS) {
-	hunter()  // A termes calculer MAX_DEGATS et mettre ici la fonction d'exécution de l'ennemi
+	execute()  // A termes calculer MAX_DEGATS
+	say(arrayRandom(PHRASES[0])[0])
+} else if (getLife() / getTotalLife() > (getLife(enemy) / getTotalLife(enemy)) - 0.15) {
+	hunter()
+	say(arrayRandom(PHRASES[1])[0])
 } else {
-	if (getLife() / getTotalLife() > (getLife(enemy) / getTotalLife(enemy)) - 0.2) {
-		hunter()
-	} else {
-		prey()
-	}
+	prey()
+	say(arrayRandom(PHRASES[2])[0])
 }
