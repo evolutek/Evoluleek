@@ -1,0 +1,12 @@
+setWeapon(WEAPON_PISTOL)
+for (var i = 0; i < 613; i++) {
+    if (canUseWeaponOnCell(WEAPON_PISTOL, i) and lineOfSight(getCell(), i)) {
+		mark(i, getColor(0, 255, 0))
+	} else if (lineOfSight(getCell(), i)) {
+		mark(i, getColor(0, 0, 255))
+	} else if (canUseWeaponOnCell(WEAPON_PISTOL, i)) {
+		mark(i, getColor(255, 0, 0))
+	} else {
+		mark(i, getColor(255, 255, 255))
+	}
+}

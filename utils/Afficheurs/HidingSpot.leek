@@ -1,0 +1,22 @@
+var ennemi = getNearestEnemy()
+
+var cases = []
+fill(cases, true, 613) 
+
+for (var i = 0; i < 613; i++) {
+    if (getCellDistance(getCell(ennemi), i) < getMP(ennemi)) {
+		for (var j = 0; j < 613; j++) {
+			if (lineOfSight(i, j) and cases[j]) {
+				cases[j] = false
+			}
+		}
+	}
+}
+
+for (var i = 0; i < 613; i++) {
+    if (cases[i]) {
+		mark(i, getColor(0, 255, 0))
+	} else  {
+		mark(i, getColor(255, 0, 0))
+	}
+}

@@ -1,0 +1,3 @@
+for (var i = 0; i < 613; i++) {
+    markText(i, i)
+}

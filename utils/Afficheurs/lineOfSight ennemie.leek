@@ -1,0 +1,7 @@
+for (var i = 0; i < 613; i++) {
+    if (lineOfSight(getCell(getNearestEnemy()), i)) {
+		mark(i, getColor(0, 255, 0))
+	} else  {
+		mark(i, getColor(255, 0, 0))
+	}
+}
