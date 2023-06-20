@@ -3,13 +3,27 @@ include("functions")
 
 function hunter() {
 	// 1) Protéines si possible
-	if (canUseChip(MyProt, self))
-	{
-		useChip(MyProt, self)
+	for (var i = 0; i < count(ATTACK_CHIPS); i++) {
+		if (getTP(self) > getChipCost(ATTACK_CHIPS[i]) and
+			getCooldown(ATTACK_CHIPS[i]) == 0 and
+			canUseChip(ATTACK_CHIPS[i], self)) {
+			debug("Buff d'attaque ! TPs: " + getTP(self))
+			useChip(ATTACK_CHIPS[i], self)
+		}
 	}
 	
 	// 2) On se met en position de tir
-	var cell = GO_ATTACK()
+	var cell
+	var i = 0
+	while (getCellDistance(getCell(), cell) > getMP() and i < count(ARMES) and getTP() >= ARMES[i]["GET_TOTAL_COST"]) {
+		debug("Trying weapon " + i)
+		cell = GO_ATTACK(ARMES[i])
+		i++
+	}
+	if (i == count(ARMES) or cell == null) {
+		debug("No weapon can touch !")
+		cell = GO_ATTACK(ARMES[0])
+	}
 	var check = true
 	while (getMP(self) > 0 and getCellDistance(getCell(), cell) > 0 and check)
 	{

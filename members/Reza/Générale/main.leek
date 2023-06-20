@@ -4,6 +4,11 @@ include("execute")
 include("hunter")
 include("prey")
 
+self = getEntity()
+enemy = GET_ENEMY()
+debug("Je suis qui ? " + self)
+debug("Qui est mon ennemi ? " + enemy)
+
 /* Etape 1: Premier tour */
 if (getTurn() == 1) {
 	// Pas encore set: setWeapon(ARMES[0]["id"]) // Attention : coûte 1 PT
@@ -15,27 +20,7 @@ if (getTurn() == 1) {
 }
 
 /* Etape 2: Choisir l'état */
-// 1) Soin au besoin
-if (getTP(self) > getChipCost(CHIP_BANDAGE) and
-	getLife() < getTotalLife() - 18 and
-	canUseChip(CHIP_BANDAGE, self)) {
-	debug("Soins ! TPs: " + getTP(self))
-	useChip(CHIP_BANDAGE, self)
-}
-
-// 2) Préparation au combat au besoin
-if (getCellDistance(getCell(), getCell(enemy)) < 15 and getLife()/getTotalLife() > 0.5) {
-	if (getTP(self) > getChipCost(CHIP_MOTIVATION) and getCooldown(CHIP_MOTIVATION) == 0) {
-		debug("Motivation ! TPs: " + getTP(self))
-		useChip(CHIP_MOTIVATION, self)
-	}
-	if (getTP(self) > getChipCost(CHIP_STRETCHING) and getCooldown(CHIP_STRETCHING) == 0) {
-		debug("Étirements ! TPs: " + getTP(self))
-		useChip(CHIP_STRETCHING, self)
-	}
-}
-
-// 3) Recharger les chip
+// 1) Recharger les chip
 var i = 0
 while (i < count(ARMES))
 {
@@ -46,14 +31,36 @@ while (i < count(ARMES))
 	i++
 }
 
-// 4) Choix
+// 2) Choix
 if (getLife(enemy) < MAX_DEGATS) {
 	execute()  // A termes calculer MAX_DEGATS
 	say(arrayRandom(PHRASES[0])[0])
-} else if (getLife() / getTotalLife() > (getLife(enemy) / getTotalLife(enemy)) - 0.15) {
-	hunter()
-	say(arrayRandom(PHRASES[1])[0])
 } else {
-	prey()
-	say(arrayRandom(PHRASES[2])[0])
+	// 3) Soin au besoin
+	for (i = 0; i < count(HEAL_CHIPS); i++) {
+		if (getTP(self) > getChipCost(HEAL_CHIPS[i]) and
+			getLife() < getTotalLife() - 18 and
+			canUseChip(HEAL_CHIPS[i], self)) {
+			debug("Soins ! TPs: " + getTP(self))
+			useChip(HEAL_CHIPS[i], self)
+		}
+	}
+
+	// 4) Préparation au combat au besoin
+	if (getCellDistance(getCell(), getCell(enemy)) < 15 and getLife()/getTotalLife() > 0.5) {
+		for (i = 0; i < count(BUFF_CHIPS); i++) {
+			if (getTP(self) > getChipCost(BUFF_CHIPS[i]) and getCooldown(BUFF_CHIPS[i]) == 0) 
+			{
+				useChip(BUFF_CHIPS[i], self)
+			}
+		}
+	}
+	if (getLife() / getTotalLife() > (getLife(enemy) / getTotalLife(enemy)) - 0.1 and
+	   getLife() / getTotalLife() > 0.4) {
+		hunter()
+		say(arrayRandom(PHRASES[1])[0])
+	} else {
+		prey()
+		say(arrayRandom(PHRASES[2])[0])
+	}
 }

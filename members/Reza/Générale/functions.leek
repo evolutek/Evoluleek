@@ -2,45 +2,36 @@ include("globals")
 
 function ATTACK()
 {
-	// debug("FEU !")
-	if (lineOfSight(getCell(self), getCell(enemy)))
-	{
-		var TPs = getTP()
-		for (var i = 0; i < count(ARMES); i++) {
-			if (ARMES[i]["type"] == "arme") {
-				if (getWeapon() != ARMES[i]["id"] and
-					canUseWeapon(enemy) and
-					TPs >= ARMES[i]["cout"]+1 and
-					ARMES[i]["dispo"] == ARMES[i]["dispo_max"]) {
-					setWeapon(ARMES[i]["id"])
-					TPs -= 1
-				}
-				while (canUseWeapon(enemy) and
-					   TPs >= ARMES[i]["cout"] and
-					   ARMES[i]["dispo"] == ARMES[i]["dispo_max"]) {
-					debug("FEU ARME " + i)
-					useWeapon(enemy)
-					TPs -= ARMES[i]["cout"]
-					ARMES[i]["dispo"] = 0
-				}
-			} else {
-				while (canUseChip(ARMES[i]["id"], enemy) and
-					   TPs >= ARMES[i]["cout"] and
-					   ARMES[i]["dispo"] == ARMES[i]["dispo_max"]) {
-					debug("FEU PUCE " + i)
-					useChip(ARMES[i]["id"], enemy)
-					TPs -= ARMES[i]["cout"]
-					ARMES[i]["dispo"] = 0
-				}
+	for (var i = 0; i < count(ARMES); i++) {
+		if (ARMES[i]["type"] == "arme") {
+			debug("PIOU PIOU")
+			if ((getWeapon() == null or getWeapon() != ARMES[i]["id"]) and
+				canUseWeapon(ARMES[i]["id"], enemy) and
+				getTP() >= ARMES[i]["cout"]+1) {
+				setWeapon(ARMES[i]["id"])
+			}
+			while (getWeapon() == ARMES[i]["id"] and
+				   canUseWeapon(enemy) and
+				   getTP() >= ARMES[i]["cout"]) {
+				debug("FEU ARME " + i + " TPs: " + getTP() + " Cout: " + ARMES[i]["cout"] + "(" + getWeaponCost(ARMES[i]["id"]) + ")")
+				useWeapon(enemy)
+				ARMES[i]["dispo"] = 0
+			}
+		} else {
+			while (canUseChip(ARMES[i]["id"], enemy) and
+				   getTP() >= ARMES[i]["cout"] and
+				   ARMES[i]["dispo"] == ARMES[i]["dispo_max"]) {
+				debug("FEU PUCE " + i)
+				useChip(ARMES[i]["id"], enemy)
+				ARMES[i]["dispo"] = 0
 			}
 		}
-	}// else {
-	// 	say("J'VOIS RIEN !")
-	//}
+	}
 }
 
 function GO_HIDE()
 {
+	clearMarks()
 	fill(cases, true, 613) 
 	
 	// Removing taken spots
@@ -64,62 +55,70 @@ function GO_HIDE()
 	var nearestID = 0
 	var nearestDist = 999
 	for (var i = 0; i < 613; i++) {
-		if (cases[i] and getCellDistance(getCell(), i) < nearestDist) {
-			nearestID = i
-			nearestDist = getCellDistance(getCell(), i)
+		if (cases[i]) {
+			mark(i, getColor(255, 0, 0))
+			if (getCellDistance(getCell(), i) < nearestDist) {
+				nearestID = i
+				nearestDist = getCellDistance(getCell(), i)
+			}
 		}
 	}
+	mark(nearestID, getColor(0, 0, 255))
 	
 	return nearestID
 }
 
-function GO_ATTACK()
+function GO_ATTACK(arme)
 {
-	var cells = getCellsToUseChip(CHIP_ICE, enemy)
+	clearMarks()
+	var cells = arme["GET_CELLS_TO_USE"](enemy)
 	removeElement(cells, getCell(enemy))
 
 	// Getting the nearest one
 	var nearestID = cells[0]
 	var nearestDist = 999
 	for (var i = 0; i < count(cells); i++) {
-		if (getCellDistance(getCell(), cells[i]) < nearestDist and
-		   getCellDistance(getCell(enemy), cells[i]) >= MinMaxRange) {
+		mark(cells[i], getColor(0, 255, 0))
+		if (getCellDistance(getCell(), cells[i]) < nearestDist) {  // J'ai viré la condition sur être au moins à minmax range pcq ça faisais des chemins pas opti
 			nearestID = cells[i]
 			nearestDist = getCellDistance(getCell(), cells[i])
 		}
 	}
+	mark(nearestID, getColor(0, 0, 255))
 	
 	return nearestID
 }
 
-function GET_ENEMY()
+function GET_ENEMIES()
 {
-	var enemies = getAliveEnemies()
+	var enemiess = getEnemies()
 	debug("ENNEMIS " + enemies)
-	var enemiesnochest = []
 	
 	// On vire les coffres
-	for (var i = 0; i < count(enemies); i++) {
-		if (not contains(getName(enemies[i]), "chest")) {
-			insert(enemiesnochest, enemies[i], 0)
+	for (var i = 0; i < count(enemiess); i++) {
+		if (contains(getName(enemiess[i]), "chest")) {
+			insert(enemies[2], enemiess[i], 0)
+			remove(enemiess, i)
 		}
 	}
-	debug("ENNEMIS SANS COFFRES " + enemiesnochest)
-	
-	// On checke si l'ennemi n'as pas un pseudo de coffre
-	if (count(enemiesnochest) > 0) {
-		enemies = enemiesnochest
+	var turret = getEnemyTurret()
+	if (turret != null) {
+		removeElement(enemiess, turret)
+		insert(enemies[0], turret, 0)
 	}
-	
-	// On prends le plus proche
-	var nearestID = enemies[0]
-	var nearestDist = 999
-	for (var i = 0; i < count(enemies); i++) {
-		if (getCellDistance(getCell(), getCell(enemies[0])) < nearestDist) {
-			nearestID = enemies[i]
-			nearestDist = getCellDistance(getCell(), getCell(enemies[0]))
+	enemies[1] = enemiess
+	debug("COFFRES ENNEMIS " + enemies[2])
+	debug("POIREAUX ENNEMIS " + enemies[1])
+	debug("TOURELLE ENNEMIE " + enemies[0])
+}
+
+function GET_ENEMY()
+{
+	for (var i = 0; i < 3; i++) {
+		for (var j = 0; j < count(enemies[i]); j++) {
+			if (isAlive(enemies[i][j])) {
+				return enemies[i][j]
+			}
 		}
 	}
-	
-	return nearestID
 }

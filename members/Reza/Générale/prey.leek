@@ -3,6 +3,14 @@ include("functions")
 
 function prey() {
 	// 1) Protection si possible
+	for (var i = 0; i < count(DEFENSE_CHIPS); i++) {
+		if (getTP(self) > getChipCost(DEFENSE_CHIPS[i]) and
+			getCooldown(DEFENSE_CHIPS[i]) == 0 and
+			canUseChip(DEFENSE_CHIPS[i], self)) {
+			debug("Buff d'attaque ! TPs: " + getTP(self))
+			useChip(DEFENSE_CHIPS[i], self)
+		}
+	}
 	if (getTP(self) > getChipCost(CHIP_HELMET) and getCooldown(CHIP_HELMET) == 0) {
 		debug("Casque ! TPs: " + getTP(self))
 		useChip(CHIP_HELMET, self)
